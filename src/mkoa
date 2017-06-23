@@ -49,7 +49,7 @@ except (ImportError, NameError, Error):
 __author__ = 'Klaus Alexander Seistrup <klaus@seistrup.dk>'
 __whoami__ = 'mkoa'
 __revision__ = '2017-06-23'
-__version__ = '0.1.0 ({})'.format(__revision__)
+__version__ = '0.1.1 ({})'.format(__revision__)
 __copyright__ = """\
 mkoa {}
 Copyright © 2017 Klaus Alexander Seistrup <klaus@seistrup.dk>
@@ -130,7 +130,7 @@ def main(progname=__whoami__):
     args = parser.parse_args()
     debug('args', args)
 
-    print(mkoa(args), end='\n' if sys.stdout.isatty() else '')
+    print(mkoa(args))
 
     return 0
 
