@@ -1,2 +1,3 @@
-# oa
-OpenAlias related python scripts
+# OpenAlias
+
+OpenAlias related convenience scripts
