@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+# -*- mode: python; coding: utf-8 -*-
+"""
+Usage: mkoa [OPTIONS] ADDRESS
+
+positional arguments:
+  ADDRESS               recipient address
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --version         show version information and exit
+  --copyright           show copying policy and exit
+  -n NAME, --name NAME  name of recipient
+  -d DESCRIPTION, --description DESCRIPTION
+                        transaction description
+  -c CURRENCY, --currency CURRENCY
+                        currency (default: BTC)
+  -a AMOUNT, --amount AMOUNT
+                        transaction amount
+  -i ID, --id ID        payment id
+
+Caveat: None of the arguments are checked for validity.
+"""
+##############################################################################
+# This program is free software; you can redistribute it and/or modify it    #
+# under the terms of the GNU General Public License as published by the Free #
+# Software Foundation; either version 3 of the License, or (at your option)  #
+# any later version.                                                         #
+#                                                                            #
+# This program is distributed in the hope that it will be useful, but with-  #
+# out any warranty; without even the implied warranty of merchantability or  #
+# fitness for a particular purpose. See the GNU General Public License for   #
+# more details.  <http://gplv3.fsf.org/>                                     #
+##############################################################################
+
+import sys
+import os
+import pathlib
+import argparse
+
+from pprint import pprint
+
+try:
+    from locale import (Error, setlocale, LC_ALL)
+    _ = setlocale(LC_ALL, '')
+except (ImportError, NameError, Error):
+    pass
+
+__author__ = 'Klaus Alexander Seistrup <klaus@seistrup.dk>'
+__whoami__ = 'mkoa'
+__revision__ = '2017-06-23'
+__version__ = '0.1.0 ({})'.format(__revision__)
+__copyright__ = """\
+mkoa {}
+Copyright © 2017 Klaus Alexander Seistrup <klaus@seistrup.dk>
+
+This is free software; see the source for copying conditions. There is no
+warranty; not even for merchantability or fitness for a particular purpose.\
+""".format(__version__)
+
+DEBUG = os.environ.get('DEBUG', 'False')[0].upper() in '1JTY'  # 1/Ja/True/Yes
+EPILOG = 'Caveat: None of the arguments are checked for validity.'
+
+
+def debug(head, data=None):
+    """Possibly pretty print an object to stderr"""
+    if DEBUG:
+        pprint(head if data is None else {head: data}, stream=sys.stderr)
+
+
+def die(error=None):
+    """Exit gracefully"""
+    debug('exit', error)
+
+    if error:
+        print(error, file=sys.stderr)
+
+    sys.exit(1 if error else 0)
+
+
+def mkoa(args, version=1):
+    """Construct and return an OpenAlias according to args"""
+    elms = [
+        'oa{}:{}'.format(version, args.currency.lower()),
+        'recipient_address={};'.format(args.ADDRESS)
+    ]
+
+    if args.name:
+        elms.append('recipient_name={};'.format(args.name))
+    if args.amount:
+        elms.append('tx_amount={};'.format(args.amount))
+    if args.id:
+        elms.append('tx_payment_id={};'.format(args.id))
+    if args.description:
+        elms.append('tx_description={};'.format(args.description))
+
+    return ' '.join(elms)
+
+
+def main(progname=__whoami__):
+    """Main entry point"""
+
+    debug('argv', sys.argv)
+
+    parser = argparse.ArgumentParser(
+        prog=progname,
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=EPILOG
+    )
+    # Generic options
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s/{}'.format(__version__),
+                        help='show version information and exit')
+    parser.add_argument('--copyright', action='version',
+                        version=__copyright__,
+                        help='show copying policy and exit')
+    # Specific options
+    parser.add_argument('-n', '--name',
+                        help='name of recipient')
+    parser.add_argument('-d', '--description',
+                        help='transaction description')
+    parser.add_argument('-c', '--currency', default='BTC',
+                        help='currency (default: BTC)')
+    parser.add_argument('-a', '--amount',
+                        help='transaction amount')
+    parser.add_argument('-i', '--id',
+                        help='payment id')
+    parser.add_argument('ADDRESS', help='recipient address')
+
+    args = parser.parse_args()
+    debug('args', args)
+
+    print(mkoa(args), end='\n' if sys.stdout.isatty() else '')
+
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(pathlib.Path(sys.argv[0]).name))
+
+# eof
